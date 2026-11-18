@@ -14,6 +14,7 @@
 - 只处理本机已有的缓存。未缓存的正文、图片或视频不会从网络补齐，也不承诺能完整恢复云端收藏。
 
 加密库需要匹配的密钥：默认模式会只读扫描 QQ 进程内存，仅保留能验证**所选收藏库**的密钥候选，不保存内存转储或密钥。不会注入、挂钩、修改 QQ 或关闭系统保护。你也可使用本地密钥文件或明文库，详见[纯文件模式](docs/USAGE.md#纯文件模式)。
+<img width="414" height="447" alt="image" src="https://github.com/user-attachments/assets/4ef6c6f2-4bc6-4bd8-a7a1-828246f3bb42" />
 
 ## 一键备份
 
@@ -21,7 +22,7 @@
 2. 登录 NT 版 QQ，打开收藏夹，运行 `QQ收藏备份工具.exe`。
 3. 检查自动识别的账号和保存位置，点击 **一键备份收藏**。
 4. 完成后自动打开本地编辑网页，按 QQ 原分组检索、阅读和编辑。
-
+<img width="1064" height="810" alt="image" src="https://github.com/user-attachments/assets/a50cc1be-c996-4d84-92bd-44d51fb2bf77" />
 软件使用 Windows `SHGetKnownFolderPath(Documents)` 以及系统文档位置设置，支持“我的文档”迁移到其他磁盘，不把文档目录写死为 C 盘。多个账号可选择，也可手动选择 `collection.db` 或账号文件夹。成功后只在本机记住路径偏好。
 
 ## 导出与更新
@@ -70,5 +71,7 @@ python scripts/build_release.py
 - QQ 数据结构和加密方式可能变化。已验证版本范围与局限见 [COMPATIBILITY](docs/COMPATIBILITY.md)。
 - 不保证得到全部正文或附件，不保证兼容所有 QQ 版本，也不承诺不存在账号、数据或平台规则方面的风险。
 - 不得用来处理无授权的数据、绕过权限保护、监控他人或传播第三方隐私。
+
+<img width="1265" height="712" alt="image" src="https://github.com/user-attachments/assets/865c66bd-dfd2-4220-a963-200f46660bb9" />
 
 使用前请阅读[免责声明](DISCLAIMER.md)、[隐私与本地处理说明](PRIVACY.md)及 [MIT 许可证](LICENSE)。本项目非腾讯官方产品，QQ 相关名称及商标归其权利人所有。
