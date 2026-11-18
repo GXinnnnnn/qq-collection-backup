@@ -31,6 +31,11 @@ class Handler(BaseHTTPRequestHandler):
    self.trusted();u=urlsplit(self.path);editor=self.server.editor
    if u.path=='/api/item':
     self.trusted(True);return self.reply(200,editor.item(parse_qs(u.query).get('id',[''])[0]))
+   if u.path=='/api/suggest':
+    self.trusted(True)
+    from .taxonomy import suggest
+    id=parse_qs(u.query).get('id',[''])[0];item=editor.item(id);record={**editor.record(editor.archive(),id),**item['effective']}
+    return self.reply(200,{'suggestion':suggest(record),'notice':'本地规则建议，未作逐条语义复核；应用后仍需保存。'})
    if u.path in ('/','/收藏分类阅读.html',quote('/收藏分类阅读.html')):
     with editor.lock:
      html=editor.html_path.read_text(encoding='utf8');archive=editor.archive();archive['local_edits']=load_store(editor.store_path)

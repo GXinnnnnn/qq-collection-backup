@@ -5,7 +5,7 @@ import hashlib,os,platform,shutil,subprocess,sys,zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
 SRC=ROOT/'src';ASSETS=SRC/'qq_collection_backup/assets'
-VERSION='1.0.0'
+VERSION='1.0.1'
 
 def build(entry,name,destination,extra=()):
     command=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onefile','--windowed','--noupx',

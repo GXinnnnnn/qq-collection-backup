@@ -77,7 +77,7 @@ function bodyEditor(x){
  else{save.disabled=true;title.disabled=true;text.disabled=true;status.textContent='展开后读取本地笔记。';}
  save.onclick=async()=>{
   if(saving||!snapshot)return;save.disabled=true;reload.disabled=true;title.disabled=true;text.disabled=true;saving=true;pendingSaves++;status.textContent='正在保存到本地…';
-  try{const result=await editorApi('/api/save',{...snapshot,title:title.value,text:text.value,...(overrides[x.id]?{classification:overrides[x.id]}:{})});contentEdits[x.id]=result.edit;delete overrides[x.id];persist();dirtyEditors.delete(x.id);snapshot={...snapshot,version:result.edit.version,md_sha256:result.md_sha256};applyOverrides();selectors();status.textContent='已保存，Markdown 已同步。';const host=box.closest('.content');if(host){const prose=host.querySelector('.entry-prose');if(prose)prose.textContent=text.value;const card=host.closest('.card');if(card){card.querySelector('h2').textContent=safeTitle(x);const preview=card.querySelector('.preview');if(preview&&!x.classification.sensitive)preview.textContent=x.text.slice(0,150)+(x.text.length>150?'…':'');}}}
+  try{const result=await editorApi('/api/save',{...snapshot,title:title.value,text:text.value,...(overrides[x.id]?{classification:overrides[x.id]}:{})});archive.domains=result.domains||archive.domains;archive.purposes=result.purposes||archive.purposes;contentEdits[x.id]=result.edit;delete overrides[x.id];persist();dirtyEditors.delete(x.id);snapshot={...snapshot,version:result.edit.version,md_sha256:result.md_sha256};applyOverrides();selectors();status.textContent='已保存，Markdown 已同步。';const host=box.closest('.content');if(host){const prose=host.querySelector('.entry-prose');if(prose)prose.textContent=text.value;const card=host.closest('.card');if(card){card.querySelector('h2').textContent=safeTitle(x);const preview=card.querySelector('.preview');if(preview&&!x.classification.sensitive)preview.textContent=x.text.slice(0,150)+(x.text.length>150?'…':'');}}}
   catch(e){status.textContent='未保存：'+e.message+' 当前编辑区的文字已保留。';}
   finally{saving=false;pendingSaves--;save.disabled=false;reload.disabled=false;title.disabled=false;text.disabled=false;}
  };
@@ -92,7 +92,7 @@ function editorStatus(){
 async function saveClassification(x,c){
  if(dirtyEditors.size)throw Error('请先保存正在编辑的正文，再调整分类。');
  pendingSaves++;
- try{const snapshot=await editorApi('/api/item?id='+encodeURIComponent(x.id));if(snapshot.conflict||snapshot.external_md)throw Error('QQ原文或本地笔记有变化，请先打开正文编辑区核对并保存。');const result=await editorApi('/api/save',{...snapshot,title:snapshot.effective.title,text:snapshot.effective.text,classification:c});contentEdits[x.id]=result.edit;delete overrides[x.id];persist();applyOverrides();selectors();}
+ try{const snapshot=await editorApi('/api/item?id='+encodeURIComponent(x.id));if(snapshot.conflict||snapshot.external_md)throw Error('QQ原文或本地笔记有变化，请先打开正文编辑区核对并保存。');const result=await editorApi('/api/save',{...snapshot,title:snapshot.effective.title,text:snapshot.effective.text,classification:c});archive.domains=result.domains||archive.domains;archive.purposes=result.purposes||archive.purposes;contentEdits[x.id]=result.edit;delete overrides[x.id];persist();applyOverrides();selectors();}
  finally{pendingSaves--;}
  filter();message('分类已保存，Markdown 属性已同步。');
 }

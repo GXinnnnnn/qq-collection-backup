@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import copy,datetime,hashlib,json,os,re,secrets,threading
 from .local_edits import load_store,effective,digest,conflict,encode_archive
 from .note_render import note_body
+from . import taxonomy
 
 class EditError(Exception):
  def __init__(self,message,status=400):super().__init__(message);self.status=status
@@ -86,9 +87,13 @@ class Editor:
    e.update(title=title,text=text,text_sha256=digest(text),source_text_sha256=digest(r['text']),source_title=r['title'],source_text=r['text'],updated_at=when,version=(previous.get('version',0) if previous else 0)+1)
    if 'classification' in payload:
     c=payload['classification']
-    if not isinstance(c,dict) or c.get('domain') not in a['domains'] or c.get('purpose') not in a['purposes'] or not isinstance(c.get('tags'),list) or len(c['tags'])>3 or not all(isinstance(t,str) and t.strip() and len(t)<=24 for t in c['tags']):raise EditError('分类或标签格式不正确。')
-    e['classification']={'domain':c['domain'],'purpose':'存档' if c['domain']=='技术宅' and c['purpose']=='备忘录' else c['purpose'],'tags':list(dict.fromkeys(c['tags']))}
+    try:e['classification']=taxonomy.classification(c)
+    except ValueError as exc:raise EditError(str(exc)) from exc
     e['classification_text_sha256']=digest(text)
+    vocab=taxonomy.vocabulary(a['records'],s,a)
+    for key,field in [('domains','domain'),('purposes','purpose')]:
+     if e['classification'][field] not in vocab[key]:vocab[key].append(e['classification'][field])
+    a.update(vocab);s['taxonomy']=vocab
    s['edits'][r['id']]=e;s['revision']=s.get('revision',0)+1
    new_note=note_body(effective(r,s),effective(r,s)['classification']).encode('utf8');e['md_sha256']=hashlib.sha256(new_note).hexdigest()
    a['local_edits']=s
@@ -113,4 +118,4 @@ class Editor:
    log=json.loads((folder/'修改记录.json').read_text(encoding='utf8'));log['status']='committed'
    try:atomic_write(folder/'修改记录.json',json.dumps(log,ensure_ascii=False,indent=2).encode('utf8'))
    except OSError:pass # Content is already committed; retain prepared recovery log.
-   return {'ok':True,'edit':e,'revision':s['revision'],'md_sha256':e['md_sha256'],'note_path':r['note_path'],'history':str(folder.relative_to(self.root))}
+   return {'ok':True,'edit':e,'revision':s['revision'],'md_sha256':e['md_sha256'],'note_path':r['note_path'],'domains':a['domains'],'purposes':a['purposes'],'history':str(folder.relative_to(self.root))}

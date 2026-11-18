@@ -45,10 +45,10 @@ class EditorTests(unittest.TestCase):
   item=self.editor.item(self.record['id']);self.assertTrue(item['conflict']);self.editor.save({**item,'title':'合并','text':'本地文字 + QQ 新正文'});self.assertFalse(self.editor.item(self.record['id'])['conflict'])
  def test_classification_and_empty_text(self):
   result=self.editor.save(self.payload('',classification={'domain':'技术宅','purpose':'备忘录','tags':['硬件']}));view=effective(self.record,load_store(self.root/'本地编辑.json'))
-  self.assertEqual(view['classification']['purpose'],'存档');self.assertFalse(view['classification']['review']);self.assertEqual(result['edit']['text_sha256'],digest(''))
+  self.assertEqual(view['classification']['purpose'],'备忘录');self.assertFalse(view['classification']['review']);self.assertEqual(result['edit']['text_sha256'],digest(''))
   self.assertEqual(markdown_text(self.note.read_text(encoding='utf8')),'')
  def test_invalid_and_unknown_input(self):
-  for extra in [{'title':'多行\n标题'},{'text':'\x00'},{'classification':{'domain':'不存在','purpose':'存档','tags':[]}},{'classification':{'domain':'杂谈','purpose':'存档','tags':['a','b','c','d']}}]:
+  for extra in [{'title':'多行\n标题'},{'text':'\x00'},{'classification':{'domain':'非法\n名称','purpose':'存档','tags':[]}},{'classification':{'domain':'杂谈','purpose':'存档','tags':['a','b','c','d']}}]:
    with self.assertRaises(EditError):self.editor.save(self.payload(**extra))
   with self.assertRaises(EditError):self.editor.item('no-id')
  def test_write_failure_rolls_back(self):

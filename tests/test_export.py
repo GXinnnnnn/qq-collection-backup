@@ -23,7 +23,9 @@ class UpgradeTests(unittest.TestCase):
    for p in [previous.parent,new.parent]:p.mkdir();(p/'收藏索引.xlsx').write_bytes(b'test workbook placeholder')
    record={'id':'test','title':'测试','text':'原始文字','number':1,'date':'2026-11-18','type':'文字','status':'列表文字','qq_group':'数码科技','qq_group_id':'2','source':'','sender':'','url':'','notes':'','attachments':[],'preview':'','detail_html':''}
    data={'records':[record],'groups':[{'name':'数码科技'}]};write_editable(data,previous,root/'missing');editor=Editor(previous);item=editor.item('test');editor.save({**item,'title':'本地修改','text':'本地文字不丢失'})
+   item=editor.item('test');editor.save({**item,'title':item['effective']['title'],'text':item['effective']['text'],'classification':{'domain':'自建领域','purpose':'自建用途','tags':['个人标签']}})
    data['records'][0]['text']='新的QQ原文';write_editable(data,new,previous);item=Editor(new).item('test');self.assertEqual(item['effective']['text'],'本地文字不丢失');self.assertTrue(item['conflict']);self.assertIn('QQ原分组/数码科技',item['note_path'])
+   self.assertEqual(item['effective']['classification']['domain'],'自建领域');self.assertIn('自建用途',Editor(new).archive()['purposes'])
 
  def test_file_only_never_scans_process(self):
   with tempfile.TemporaryDirectory() as tmp:

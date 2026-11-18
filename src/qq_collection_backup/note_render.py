@@ -5,6 +5,7 @@ def title(r,a):return ('账号与访问凭据' if a['purpose']=='重要账号密
 def fence(text):return '`'*max(4,max((len(v) for v in re.findall(r'`+',text)),default=0)+1)
 def note_body(r,a):
  props={'title':title(r,a),'qq_collection_id':r['id'],'archive_order':r['archive_order'],'source_number':r['number'],'collected_at':r['date'] or None,'domain':a['domain'],'related_domains':a['related_domains'],'purpose':a['purpose'],'tags':[re.sub(r'[^\w\u4e00-\u9fff/-]','_',t).strip('_') for t in a['tags']],'keywords':a['tags'],'classification_method':a.get('review_method','未复核'),'classification_confidence':a['confidence'],'needs_review':a['review'],'sensitive':a['sensitive'],'source_status':r['status'],'possible_truncation':bool(r.get('suspected_truncated'))}
+ props['tags']=[('tag_'+t if t.isdecimal() else t) for t in props['tags'] if t]
  props.update(qq_group=r.get('qq_group','未分组'),qq_group_id=r.get('qq_group_id','0'))
  if r.get('local_edited_at'):props.update(local_edited_at=r['local_edited_at'],qq_source_conflict=r.get('local_source_conflict',False))
  lines=['---']+[k+': '+json.dumps(v,ensure_ascii=False) for k,v in props.items()]+['---','','# '+mdtext(title(r,a)),'']
