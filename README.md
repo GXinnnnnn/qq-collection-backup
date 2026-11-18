@@ -5,7 +5,7 @@
 在本机登录 **NT 版 QQ**，打开过收藏夹后，运行本工具即可提取本地已缓存的收藏，保留你在 QQ 中设置的分组，整理为可检索网页、Markdown、Excel 与本机已有附件。网页可修改标题、正文并保存到对应 Markdown，也可用 Obsidian 打开笔记文件夹。
 
 **本项目仅整理用户授权的本机收藏缓存，不额外采集好友、聊天或个人资料，不连接 QQ 服务器，不上传收藏、密钥或其他内容。** 公开仓库与发行包不包含作者的收藏、账号、密钥或图片。
-<img width="1064" height="810" alt="image" src="https://github.com/user-attachments/assets/f1661d96-ccae-4a97-8e02-d485f1a55cd6" />
+<img width="1764" height="907" alt="image" src="https://github.com/user-attachments/assets/bd707872-d9cd-4dde-846d-d50c601995e1" />
 
 ## 使用条件
 
