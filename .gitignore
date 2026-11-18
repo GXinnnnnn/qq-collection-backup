@@ -1,0 +1,15 @@
+.venv/
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.py[cod]
+*.spec
+*.db
+*.db-*
+*.sqlite*
+keymap*.json
+.env*
+exports/
+personal/
+*.log

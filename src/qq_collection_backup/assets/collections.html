@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QQ 收藏 · 本地档案</title>
+<style>__THEME__</style></head><body>
+<header class="glass"><div><h1>QQ 收藏</h1><p>部分条目仅有列表预览，完整性未验证。</p></div><div class="stats"><span><strong id="total">—</strong>条收藏</span><span><strong id="rich">—</strong>条详情缓存</span><span><strong id="years">—</strong>个年份</span></div></header>
+<div class="layout"><aside><section class="panel filters"><h2>筛选收藏</h2><div><label for="qqGroup">QQ 原分组</label><select id="qqGroup"><option value="">全部 QQ 分组</option></select></div><div><label for="year">年份</label><select id="year"><option value="">全部年份</option></select></div><div><label for="type">内容类型</label><select id="type"><option value="">全部类型</option></select></div><div><label for="scope">内容范围</label><select id="scope"><option value="">全部记录</option><option value="rich">有详情缓存</option><option value="suspect">疑似截断</option><option value="empty">没有可读文字</option></select></div><div><label for="sort">时间排序</label><select id="sort"><option value="new">从新到旧</option><option value="old">从旧到新</option></select></div></section><section class="panel links"><h2>本地文件</h2>__CONTACT_LINK__<a href="收藏索引.xlsx">收藏索引 Excel</a><a href="使用说明.md">导出说明</a><p class="note">图片和视频仅有描述，未包含附件。</p></section></aside>
+<main><div class="search-panel"><label class="sr" for="query">搜索收藏</label><input id="query" class="search" type="search" placeholder="搜索正文、标题、来源、发送者或收藏 ID" autocomplete="off"><div class="toolbar"><span id="result" aria-live="polite"></span><div class="pagination"><button class="reset" id="reset">重置筛选</button><button id="prev">上一页</button><form id="pageJumpForm" novalidate><label for="pageInput">第</label><input id="pageInput" type="number" min="1" step="1" inputmode="numeric" aria-label="跳转页码" autocomplete="off"><span class="page-total" id="pageTotal"></span><button class="primary" id="pageGo" type="submit">跳转</button></form><button id="next">下一页</button></div><span id="page" class="sr" aria-live="polite"></span></div><p id="pageMessage" class="page-message" role="status" aria-live="polite"></p></div><section id="cards" aria-label="收藏记录"></section><div class="toolbar bottom-toolbar"><span>每页 40 条，点击收藏展开正文</span><div class="pagination"><button id="prevBottom">上一页</button><form id="pageJumpFormBottom" novalidate><label for="pageInputBottom">第</label><input id="pageInputBottom" type="number" min="1" step="1" inputmode="numeric" aria-label="底部跳转页码" autocomplete="off"><span class="page-total" id="pageTotalBottom"></span><button class="primary" id="pageGoBottom" type="submit">跳转</button></form><button id="nextBottom">下一页</button></div><p id="pageMessageBottom" class="page-message" role="status" aria-live="polite"></p></div></main></div>
+<script id="archiveData" type="application/json">__ARCHIVE_DATA__</script>
+<script>
+__VIEWER_CONTROLS__
+const data=JSON.parse(document.getElementById('archiveData').textContent),$=id=>document.getElementById(id),size=40;
+let page=0,filtered=data;
+const yearOf=x=>x.date?x.date.slice(0,4):'时间未知';
+$('total').textContent=data.length.toLocaleString();$('rich').textContent=data.filter(x=>x.status==='详情缓存正文').length;
+const years=[...new Set(data.map(yearOf))].sort().reverse();$('years').textContent=years.filter(x=>x!=='时间未知').length;
+function option(parent,text,value){const o=document.createElement('option');o.textContent=text;o.value=value;parent.append(o)}
+years.forEach(y=>option($('year'),y,y));[...new Set(data.map(x=>x.type))].forEach(t=>option($('type'),t,t));
+for(const g of [...new Set(data.map(x=>x.qq_group||'未分组'))].sort()){const o=document.createElement('option');o.value=g;o.textContent=g+'（'+data.filter(x=>(x.qq_group||'未分组')===g).length+'）';$('qqGroup').append(o)}
+const search=data.map(x=>[x.title,x.text,x.preview,x.source,x.sender,x.id,x.url,x.qq_group].join('\n').toLocaleLowerCase());
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
+function card(x){
+ const d=el('details','card');d.id=x.id;const summary=el('summary');
+ const meta=el('div','meta');meta.append(el('span','',x.date||'时间未知'),el('span','',x.type),el('span','badge'+(x.suspected_truncated?' warn':''),x.status==='详情缓存正文'?'详情缓存正文':x.suspected_truncated?'疑似截断':'列表记录'));
+ summary.append(meta,el('h2','',x.title),el('div','preview',x.text.slice(0,160)+(x.text.length>160?'…':'')));
+ const body=el('div','content');if(x.notes)body.append(el('div','notice',x.notes));
+ const footer=el('div','entry-footer'),actions=el('div','entry-actions'),metadata=el('div','entry-metadata');const copy=el('button','','复制正文');copy.onclick=()=>copyText(x.text,copy);actions.append(copy);for(const [label,value] of [['来源',x.source],['发送者',x.sender],['收藏 ID',x.id],['原始范围',x.status]])if(value){const item=el('span','',label+'：'+value);item.title=item.textContent;metadata.append(item)}footer.append(actions,metadata);
+ body.append(el('div','prose',x.text||'本库没有可读文字；仅保留元数据或附件描述。'));
+ if(x.url&&/^https?:\/\//i.test(x.url)){const a=el('a','',x.url);a.href=x.url;a.target='_blank';a.rel='noopener noreferrer';body.append(a)}
+ if(x.detail_html&&x.preview&&x.preview!==x.text){const compare=el('details');compare.append(el('summary','','原列表预览（对照）'),el('div','prose',x.preview));body.append(compare)}
+ if(x.attachments.length){body.append(el('p','small','附件仅有描述，文件未随数据库导出：'));x.attachments.forEach(a=>body.append(el('p','small',(a.filename||a.kind)+(a.path?' · 原路径：'+a.path:''))))}
+ body.append(footer);d.append(summary,body);return d;
+}
+async function copyText(text,button){try{await navigator.clipboard.writeText(text);button.textContent='已复制'}catch{const t=el('textarea','',text);document.body.append(t);t.select();const ok=document.execCommand('copy');t.remove();button.textContent=ok?'已复制':'请选中正文复制'}setTimeout(()=>button.textContent='复制正文',1800)}
+function render(){
+ const pages=Math.ceil(filtered.length/size);page=Math.max(0,Math.min(page,pages-1));
+ $('result').textContent='找到 '+filtered.length.toLocaleString()+' 条收藏';$('page').textContent=pages?(page+1)+' / '+pages:'0 / 0';setPageMessage('');
+ for(const suffix of ['','Bottom']){const input=$('pageInput'+suffix);input.value=pages?String(page+1):'';input.max=String(Math.max(1,pages));input.disabled=!pages;$('pageTotal'+suffix).textContent='/ '+pages+' 页';$('pageGo'+suffix).disabled=!pages;}
+ $('cards').replaceChildren();if(!filtered.length)$('cards').append(el('div','empty','没有找到匹配的收藏，试试其他关键词。'));else filtered.slice(page*size,(page+1)*size).forEach(x=>$('cards').append(card(x)));
+ refreshThemedSelects();['prev','prevBottom'].forEach(id=>$(id).disabled=page<=0);['next','nextBottom'].forEach(id=>$(id).disabled=page+1>=pages)
+}
+function setPageMessage(message){$('pageMessage').textContent=message;$('pageMessageBottom').textContent=message}
+function goPage(raw){
+ const pages=Math.ceil(filtered.length/size),target=Number(String(raw).trim());
+ if(!pages){setPageMessage('当前没有可跳转的页面。');return false}
+ if(!String(raw).trim()||!Number.isFinite(target)||!Number.isInteger(target)||target<1||target>pages){setPageMessage('请输入 1 至 '+pages+' 之间的整数页码。');return false}
+ page=target-1;render();$('query').scrollIntoView({block:'start'});return true;
+}
+for(const suffix of ['','Bottom']){$('pageJumpForm'+suffix).addEventListener('submit',event=>{event.preventDefault();goPage($('pageInput'+suffix).value)})}
+function filter(){const terms=$('query').value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean),y=$('year').value,t=$('type').value,scope=$('scope').value;
+ filtered=data.filter((x,i)=>(!$('qqGroup').value||(x.qq_group||'未分组')===$('qqGroup').value)&&(!y||yearOf(x)===y)&&(!t||x.type===t)&&(!scope||scope==='rich'&&x.status==='详情缓存正文'||scope==='suspect'&&x.suspected_truncated||scope==='empty'&&!x.text)&&terms.every(q=>search[i].includes(q)));if($('sort').value==='old')filtered=filtered.slice().reverse();page=0;render()}
+let timer; $('query').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(filter,160)});['year','type','scope','sort','qqGroup'].forEach(id=>$(id).addEventListener('change',filter));
+function reset(){['query','year','type','scope','qqGroup'].forEach(id=>$(id).value='');$('sort').value='new';filter()}
+$('reset').onclick=reset;['prev','prevBottom'].forEach(id=>$(id).onclick=()=>{page--;render();$('query').scrollIntoView({block:'start'})});['next','nextBottom'].forEach(id=>$(id).onclick=()=>{page++;render();$('query').scrollIntoView({block:'start'})});
+function jump(){let id;try{id=decodeURIComponent(location.hash.slice(1))}catch{return}if(!id)return;const index=data.findIndex(x=>x.id===id);if(index<0)return;reset();page=Math.floor(index/size);render();const d=document.getElementById(id);if(d){d.open=true;d.scrollIntoView({block:'start'})}}
+window.addEventListener('hashchange',jump);render();jump();
+</script></body></html>
