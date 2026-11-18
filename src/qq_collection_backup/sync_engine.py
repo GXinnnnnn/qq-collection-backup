@@ -6,7 +6,7 @@ from datetime import datetime
 from .export_common import connect,write_json,asset
 from .qqsource import snapshot,decrypt,find_keys,verify_key,check_cancel,Cancelled
 
-VERSION='1.3.0'
+VERSION='1.0.0'
 def stamp():return datetime.now().strftime('%Y%m%d-%H%M%S-%f')
 def load(path):
     p=Path(path);return json.loads(p.read_text(encoding='utf-8-sig')) if p.exists() else None
